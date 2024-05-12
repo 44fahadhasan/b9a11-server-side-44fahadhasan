@@ -37,6 +37,19 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+    // database
+    const database = client.db("raque");
+
+    // collection one
+    const assignmentsCollection = database.collection("assignments");
+
+    // insert a new assignment in assignmentsCollection
+    app.post("/assignments", async (req, res) => {
+      const newAssignmentData = req.body;
+      const result = await assignmentsCollection.insertOne(newAssignmentData);
+      res.send(result);
+    });
+
     // last time clear me ok. remember it
     await client.db("admin").command({ ping: 1 });
     console.log(
