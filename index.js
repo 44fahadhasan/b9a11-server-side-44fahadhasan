@@ -50,6 +50,13 @@ async function run() {
       res.send(result);
     });
 
+    // get all assignment data from assignmentsCollection
+    app.get("/assignments", async (req, res) => {
+      const cursor = assignmentsCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     // last time clear me ok. remember it
     await client.db("admin").command({ ping: 1 });
     console.log(
