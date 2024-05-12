@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 const express = require("express");
 var cors = require("cors");
 require("dotenv").config();
@@ -21,6 +21,34 @@ app.use(
 app.use(express.json());
 
 // middleware end
+
+// mongodb database code start
+
+const uri = `mongodb+srv://${process.env.USER}:${process.env.PASS}@clustercar.wslyx5y.mongodb.net/?retryWrites=true&w=majority&appName=ClusterCar`;
+
+// create mongo client
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
+
+async function run() {
+  try {
+    // last time clear me ok. remember it
+    await client.db("admin").command({ ping: 1 });
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
+  } finally {
+    // code
+  }
+}
+run().catch(console.log);
+
+// mongodb database code end
 
 // default server path
 app.get("/", (req, res) => {
