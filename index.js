@@ -65,6 +65,33 @@ async function run() {
       res.send(result);
     });
 
+    // get single assignment data from assignmentsCollection by id
+    app.get("/assignment/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await assignmentsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // single assignment data update on assignmentsCollection by id
+    app.patch("/assignment/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedAssignmentData = req.body;
+
+      const updateAssignment = {
+        $set: {
+          ...updatedAssignmentData,
+        },
+      };
+
+      const result = await assignmentsCollection.updateOne(
+        filter,
+        updateAssignment
+      );
+      res.send(result);
+    });
+
     // last time clear me ok. remember it
     await client.db("admin").command({ ping: 1 });
     console.log(
