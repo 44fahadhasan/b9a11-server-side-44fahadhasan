@@ -43,6 +43,11 @@ async function run() {
     // collection one
     const assignmentsCollection = database.collection("assignments");
 
+    // collection two
+    const submittedAssignmentsCollection = database.collection(
+      "submittedAssignments"
+    );
+
     // insert a new assignment in assignmentsCollection
     app.post("/assignments", async (req, res) => {
       const newAssignmentData = req.body;
@@ -88,6 +93,17 @@ async function run() {
       const result = await assignmentsCollection.updateOne(
         filter,
         updateAssignment
+      );
+      res.send(result);
+    });
+
+    // submittedAssignments collection code start here
+
+    // insert a new submitted assignment in submittedAssignmentsCollection
+    app.post("/submittedAssignments", async (req, res) => {
+      const submittedAssignmentData = req.body;
+      const result = await submittedAssignmentsCollection.insertOne(
+        submittedAssignmentData
       );
       res.send(result);
     });
