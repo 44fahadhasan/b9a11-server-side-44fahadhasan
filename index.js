@@ -152,6 +152,24 @@ async function run() {
       }
     );
 
+    // get all pending assignment data from submittedAssignmentsCollection query by assignmentStatus:'pending'
+    app.get(
+      "/pendingAssignments/:email",
+      tokenAuthentication,
+      async (req, res) => {
+        // token cheker for valided user start now
+        if (req.tokenUserInfo.email !== req.params.email) {
+          return res.status(403).send("Forbidden");
+        }
+        // token cheker for valided user end now
+
+        const query = { assignmentStatus: "pending" };
+        const cursor = submittedAssignmentsCollection.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+      }
+    );
+
     // token api code start now
     // when client side user is logged then provide jwt token with this api
     app.post("/jwtToken", (req, res) => {
