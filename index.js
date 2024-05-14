@@ -2,6 +2,8 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 var cors = require("cors");
 require("dotenv").config();
+var jwt = require("jsonwebtoken");
+var cookieParser = require("cookie-parser");
 
 // create express app
 const app = express();
@@ -9,21 +11,37 @@ const app = express();
 // port
 const port = process.env.PORT || 5003;
 
-// middleware start
-
+// express middleware start
+app.use(express.json());
+app.use(cookieParser());
 app.use(
   cors({
     origin: ["http://localhost:5173"],
     credentials: true,
   })
 );
+// express middleware end
 
-app.use(express.json());
+// custom maiddleware start
+const tokenAuthentication = (req, res, next) => {
+  const token = req.cookies.apiSecretToken;
 
-// middleware end
+  if (!token) {
+    return res.status("401").send("Unauthorized");
+  }
+
+  jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status("401").send("Unauthorized");
+    }
+
+    req.tokenUserInfo = decoded;
+    next();
+  });
+};
+// custom maiddleware end
 
 // mongodb database code start
-
 const uri = `mongodb+srv://${process.env.USER}:${process.env.PASS}@clustercar.wslyx5y.mongodb.net/?retryWrites=true&w=majority&appName=ClusterCar`;
 
 // create mongo client
@@ -114,6 +132,53 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    // get all submitted assignment data from submittedAssignmentsCollection query by specific user email id
+    app.get(
+      "/submittedAssignments/:email",
+      tokenAuthentication,
+      async (req, res) => {
+        // token cheker for valided user start now
+        if (req.tokenUserInfo.email !== req.params.email) {
+          return res.status(403).send("Forbidden");
+        }
+        // token cheker for valided user end now
+
+        const userEmail = req.params.email;
+        const query = { submittedUserEmail: userEmail };
+        const cursor = submittedAssignmentsCollection.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+      }
+    );
+
+    // token api code start now
+    // when client side user is logged then provide jwt token with this api
+    app.post("/jwtToken", (req, res) => {
+      const activeUserInfo = req.body;
+
+      // console.log("login:", activeUserInfo?.email);
+
+      const token = jwt.sign(activeUserInfo, process.env.TOKEN_SECRET, {
+        expiresIn: "365d",
+      });
+
+      res
+        .cookie("apiSecretToken", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ tokenCreated: true });
+    });
+
+    // when client side user is logout then clear token form clint side storage from cookie
+    app.get("/logout", (req, res) => {
+      res
+        .clearCookie("apiSecretToken", { maxAge: 0 })
+        .send({ tokenCleared: true });
+    });
+    // token api code end now
 
     // last time clear me ok. remember it
     await client.db("admin").command({ ping: 1 });
