@@ -126,6 +126,25 @@ async function run() {
       res.send(result);
     });
 
+    // insert and update a submitted assignment in submittedAssignmentsCollection
+    app.put("/submittedAssignments/:id", async (req, res) => {
+      const data = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateSubmittedAssignmentData = {
+        $set: {
+          ...data,
+        },
+      };
+      const result = await submittedAssignmentsCollection.updateOne(
+        filter,
+        updateSubmittedAssignmentData,
+        options
+      );
+      res.send(result);
+    });
+
     // get all submitted assignment data from submittedAssignmentsCollection
     app.get("/submittedAssignments", async (req, res) => {
       const cursor = submittedAssignmentsCollection.find();
