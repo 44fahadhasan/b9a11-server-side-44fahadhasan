@@ -71,9 +71,27 @@ async function run() {
 
     // assignment number count api
     app.get("/countAssignment", async (req, res) => {
-      const totalAssignmentNumber =
-        await assignmentsCollection.countDocuments();
+      const { level } = req.query;
+      if (level === "") return;
 
+      let totalAssignmentNumber;
+
+      if (level === "All") {
+        totalAssignmentNumber = await assignmentsCollection.countDocuments();
+        res.send({ totalAssignmentNumber });
+        return;
+      }
+
+      if (level) {
+        const query = { level };
+        totalAssignmentNumber = await assignmentsCollection.countDocuments(
+          query
+        );
+        res.send({ totalAssignmentNumber });
+        return;
+      }
+
+      totalAssignmentNumber = await assignmentsCollection.countDocuments();
       res.send({ totalAssignmentNumber });
     });
 
@@ -82,7 +100,6 @@ async function run() {
       const level = req.query.level;
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
-      console.log(level, page, size);
       if (level === "") return;
 
       const query = { level };
@@ -113,7 +130,6 @@ async function run() {
     app.get("/assignments", async (req, res) => {
       const page = parseInt(req.query.page);
       const size = parseInt(req.query.size);
-      console.log(page, size);
       const result = await assignmentsCollection
         .find()
         .skip(page * size)
