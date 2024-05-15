@@ -66,6 +66,16 @@ async function run() {
       "submittedAssignments"
     );
 
+    // get all assignment data from assignmentsCollection based level value
+    app.get("/queryAssignments", async (req, res) => {
+      const { level } = req.query;
+      if (level === "") return;
+      const query = { level };
+      const cursor = assignmentsCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     // insert a new assignment in assignmentsCollection
     app.post("/assignments", async (req, res) => {
       const newAssignmentData = req.body;
