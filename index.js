@@ -16,7 +16,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      "http://localhost:5173",
+      "https://b9a11-client-side-44fahadhasan.netlify.app/",
+    ],
     credentials: true,
   })
 );
@@ -259,12 +262,6 @@ async function run() {
         .send({ tokenCleared: true });
     });
     // token api code end now
-
-    // last time clear me ok. remember it
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
   } finally {
     // code
   }
