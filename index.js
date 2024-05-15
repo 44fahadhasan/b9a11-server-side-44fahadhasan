@@ -66,14 +66,37 @@ async function run() {
       "submittedAssignments"
     );
 
+    // assignment number count api
+    app.get("/countAssignment", async (req, res) => {
+      const totalAssignmentNumber =
+        await assignmentsCollection.countDocuments();
+
+      res.send({ totalAssignmentNumber });
+    });
+
     // get all assignment data from assignmentsCollection based level value
     app.get("/queryAssignments", async (req, res) => {
-      const { level } = req.query;
+      const level = req.query.level;
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+      console.log(level, page, size);
       if (level === "") return;
+
       const query = { level };
-      const cursor = assignmentsCollection.find(query);
-      const result = await cursor.toArray();
+
+      const result = await assignmentsCollection
+        .find(query)
+        .skip(page * size)
+        .limit(size)
+        .toArray();
       res.send(result);
+
+      // const { level } = req.query;
+      // // if (level === "") return;
+      // const query = { level };
+      // const cursor = assignmentsCollection.find(query);
+      // const result = await cursor.toArray();
+      // res.send(result);
     });
 
     // insert a new assignment in assignmentsCollection
@@ -85,9 +108,19 @@ async function run() {
 
     // get all assignment data from assignmentsCollection
     app.get("/assignments", async (req, res) => {
-      const cursor = assignmentsCollection.find();
-      const result = await cursor.toArray();
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+      console.log(page, size);
+      const result = await assignmentsCollection
+        .find()
+        .skip(page * size)
+        .limit(size)
+        .toArray();
       res.send(result);
+
+      // const cursor = assignmentsCollection.find();
+      // const result = await cursor.toArray();
+      // res.send(result);
     });
 
     // single assignment data delete from assignmentsCollection by id
